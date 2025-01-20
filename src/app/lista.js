@@ -39,8 +39,11 @@ export default function AlignItemsList({ searchResults, loading }) {
                       variant="body2"
                       sx={{ color: "text.primary", display: "inline" }}
                     >
-                      {result.overview}
+                      {result.release_date
+                        ? new Date(result.release_date * 1000).getFullYear()
+                        : "Año desconocido"}
                     </Typography>
+                    {"  --  " + result.overview + "... "}
                   </React.Fragment>
                 }
               />
