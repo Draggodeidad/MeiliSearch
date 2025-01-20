@@ -39,7 +39,7 @@ export default function AlignItemsList({ searchResults, loading }) {
                       variant="body2"
                       sx={{ color: "text.primary", display: "inline" }}
                     >
-                      {result.year}
+                      {result.overview}
                     </Typography>
                   </React.Fragment>
                 }
