@@ -1,127 +1,114 @@
 "use client";
 import * as React from "react";
 import TextField from "@mui/material/TextField";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogActions from "@mui/material/DialogActions";
-import Button from "@mui/material/Button";
 import Autocomplete, { createFilterOptions } from "@mui/material/Autocomplete";
 import SearchIcon from "@mui/icons-material/Search";
 import { InputAdornment } from "@mui/material";
-import { client } from "./meili";
 
 const filter = createFilterOptions();
 
-export default function FreeSoloCreateOptionDialog() {
-  const [value, setValue] = React.useState(null);
-  const [open, toggleOpen] = React.useState(false);
+export default function FreeSoloCreateOptionDialog({
+  searchTerm,
+  setSearchTerm,
+  setSearchResults,
+  setLoading,
+}) {
+  // Maneja la búsqueda
+  const handleSearch = async (value) => {
+    if (!value.trim()) {
+      setSearchResults([]);
+      return;
+    }
 
-  const handleClose = () => {
-    setDialogValue({
-      title: "",
-      year: "",
-    });
-    toggleOpen(false);
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `http://69.164.194.254/indexes/movies/search`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization:
+              "Bearer f85205aa46728d9312ab3ef7d3bf0382a06be5835ea20a6863ac43a1ca7a",
+          },
+          body: JSON.stringify({
+            q: value,
+            limit: 10,
+          }),
+        }
+      );
+
+      const data = await response.json();
+      setSearchResults(data.hits || []);
+    } catch (error) {
+      console.error("Error en la búsqueda:", error);
+      setSearchResults([]);
+    }
+    setLoading(false);
   };
 
-  const [dialogValue, setDialogValue] = React.useState({
-    title: "",
-    year: "",
-  });
+  // Manejo del cambio del input con un debounce
+  React.useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      handleSearch(searchTerm);
+    }, 300);
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    setValue({
-      title: dialogValue.title,
-      year: parseInt(dialogValue.year, 10),
-    });
-    handleClose();
-  };
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
 
   return (
-    <React.Fragment>
-      <Autocomplete
-        value={value}
-        onChange={(event, newValue) => {
-          if (typeof newValue === "string") {
-            // timeout to avoid instant validation of the dialog's form.
-            setTimeout(() => {
-              toggleOpen(true);
-              setDialogValue({
-                title: newValue,
-                year: "",
-              });
-            });
-          } else if (newValue && newValue.inputValue) {
-            toggleOpen(true);
-            setDialogValue({
-              title: newValue.inputValue,
-              year: "",
-            });
-          } else {
-            setValue(newValue);
-          }
-        }}
-        filterOptions={(options, params) => {
-          const filtered = filter(options, params);
-
-          if (params.inputValue !== "") {
-            filtered.push({
-              inputValue: params.inputValue,
-              title: `"${params.inputValue}"`,
-            });
-          }
-
-          return filtered;
-        }}
-        id="free-solo-dialog-demo"
-        options={top100Films}
-        getOptionLabel={(option) => {
-          // for example value selected with enter, right from the input
-          if (typeof option === "string") {
-            return option;
-          }
-          if (option.inputValue) {
-            return option.inputValue;
-          }
-          return option.title;
-        }}
-        selectOnFocus
-        clearOnBlur
-        handleHomeEndKeys
-        renderOption={(props, option) => {
-          const { key, ...optionProps } = props;
-          return (
-            <li key={key} {...optionProps}>
-              {option.title}
-            </li>
-          );
-        }}
-        sx={{ width: 300 }}
-        freeSolo
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Buscador"
-            InputProps={{
-              ...params.InputProps,
-              startAdornment: (
-                <InputAdornment position="end">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-          />
-        )}
-      />
-
-      <Dialog open={open} onClose={handleClose}></Dialog>
-    </React.Fragment>
+    <Autocomplete
+      value={searchTerm}
+      onInputChange={(event, newInputValue) => {
+        setSearchTerm(newInputValue);
+      }}
+      filterOptions={(options, params) => {
+        const filtered = filter(options, params);
+        if (params.inputValue !== "") {
+          filtered.push({
+            inputValue: params.inputValue,
+            title: `"${params.inputValue}"`,
+          });
+        }
+        return filtered.slice(0, 6);
+      }}
+      options={[]}
+      getOptionLabel={(option) => {
+        if (typeof option === "string") {
+          return option;
+        }
+        if (option.inputValue) {
+          return option.inputValue;
+        }
+        return option.title;
+      }}
+      selectOnFocus
+      clearOnBlur
+      handleHomeEndKeys
+      renderOption={(props, option) => {
+        const { key, ...optionProps } = props;
+        return (
+          <li key={key} {...optionProps}>
+            {option.title}
+          </li>
+        );
+      }}
+      sx={{ width: 600 }}
+      freeSolo
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label="Buscador"
+          InputProps={{
+            ...params.InputProps,
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
+      )}
+    />
   );
 }
-const top100Films = [
-  { title: "The Shawshank Redemption", year: 1994 },
-  { title: "The Godfather", year: 1972 },
-];

@@ -1,3 +1,4 @@
+"use client";
 import * as React from "react";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
@@ -7,71 +8,47 @@ import ListItemAvatar from "@mui/material/ListItemAvatar";
 import Avatar from "@mui/material/Avatar";
 import Typography from "@mui/material/Typography";
 
-export default function AlignItemsList() {
+export default function AlignItemsList({ searchResults, loading }) {
   return (
-    <List sx={{ width: "100%", maxWidth: 500, bgcolor: "background.paper" }}>
-      <ListItem alignItems="flex-start">
-        <ListItemAvatar>
-          <Avatar alt="Star Wars" src="assets/lol.jpg" />
-        </ListItemAvatar>
-        <ListItemText
-          primary="Star Wars Episode IV: A New Hope"
-          secondary={
-            <React.Fragment>
-              <Typography
-                component="span"
-                variant="body2"
-                sx={{ color: "text.primary", display: "inline" }}
-              >
-                1984
-              </Typography>
-              {""}
-            </React.Fragment>
-          }
-        />
-      </ListItem>
-      <Divider variant="inset" component="li" />
-      <ListItem alignItems="flex-start">
-        <ListItemAvatar>
-          <Avatar alt="Cars" src="assets/image.png" />
-        </ListItemAvatar>
-        <ListItemText
-          primary="Cars 1"
-          secondary={
-            <React.Fragment>
-              <Typography
-                component="span"
-                variant="body2"
-                sx={{ color: "text.primary", display: "inline" }}
-              >
-                2001
-              </Typography>
-              {""}
-            </React.Fragment>
-          }
-        />
-      </ListItem>
-      <Divider variant="inset" component="li" />
-      <ListItem alignItems="flex-start">
-        <ListItemAvatar>
-          <Avatar alt="Cindy Baker" src="assets/R.jpg" />
-        </ListItemAvatar>
-        <ListItemText
-          primary="Alien"
-          secondary={
-            <React.Fragment>
-              <Typography
-                component="span"
-                variant="body2"
-                sx={{ color: "text.primary", display: "inline" }}
-              >
-                1980
-              </Typography>
-              {}
-            </React.Fragment>
-          }
-        />
-      </ListItem>
+    <List sx={{ width: "100%", maxWidth: 700, bgcolor: "background.paper" }}>
+      {loading ? (
+        <Typography variant="body2" sx={{ textAlign: "center", padding: 2 }}>
+          Cargando...
+        </Typography>
+      ) : searchResults.length === 0 ? (
+        <Typography variant="body2" sx={{ textAlign: "center", padding: 2 }}>
+          No se encontraron resultados.
+        </Typography>
+      ) : (
+        searchResults.map((result) => (
+          <div key={result.id}>
+            <ListItem alignItems="flex-start">
+              <ListItemAvatar>
+                <Avatar
+                  alt={result.title}
+                  src={result.poster || "default.jpg"}
+                  sx={{ width: 120, height: 120 }}
+                />
+              </ListItemAvatar>
+              <ListItemText
+                primary={result.title}
+                secondary={
+                  <React.Fragment>
+                    <Typography
+                      component="span"
+                      variant="body2"
+                      sx={{ color: "text.primary", display: "inline" }}
+                    >
+                      {result.year}
+                    </Typography>
+                  </React.Fragment>
+                }
+              />
+            </ListItem>
+            <Divider variant="inset" component="li" />
+          </div>
+        ))
+      )}
     </List>
   );
 }
